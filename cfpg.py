@@ -30,7 +30,7 @@ def create_order():
             }), 400
 
     try:
-        url = "https://sandbox.cashfree.com/pg/orders"
+        url = "https://api.cashfree.com/pg/orders"
         orderdata = r.post(url, headers=headers, json=body)
 
         if orderdata.ok and orderdata.content:
@@ -75,7 +75,7 @@ def get_order_status():
     }
 
     try:
-        url = f"https://sandbox.cashfree.com/pg/orders/{order_id}"
+        url = f"https://api.cashfree.com/pg/orders/{order_id}"
         orderdata = r.get(url, headers=headers)
 
         if orderdata.ok and orderdata.content:

@@ -95,3 +95,57 @@ def get_order_status():
             'responsedata': f"Request error: {str(e)}"
         }), 500
 
+@app.route('/order/verify', methods=['POST'])
+def verify_order_payment():
+    content = request.json
+
+    order_id = content.get("order_id")
+    if not order_id:
+        return jsonify({
+            'valid': False,
+            'responsedata': 'Missing required parameter: order_id'
+        }), 400
+
+    headers = {
+        'X-Client-Secret': XClientSecret,
+        'X-Client-Id': XClientId,
+        'x-api-version': '2025-01-01',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+
+    try:
+        url = f"https://api.cashfree.com/pg/orders/{order_id}"
+        response = r.get(url, headers=headers, timeout=10)
+
+        if not response.ok or not response.content:
+            return jsonify({
+                'valid': False,
+                'responsedata': f"Failed: {response.status_code} {response.text}"
+            }), response.status_code
+
+        data = response.json()
+        status = data.get("order_status", "").upper()
+
+        if status == "PAID":
+            return jsonify({
+                'valid': True,
+                'paid': True,
+                'status': status,
+                'order_id': order_id,
+                'responsedata': data
+            })
+        else:
+            return jsonify({
+                'valid': True,
+                'paid': False,
+                'status': status,
+                'order_id': order_id,
+                'responsedata': data
+            })
+
+    except r.RequestException as e:
+        return jsonify({
+            'valid': False,
+            'responsedata': f"Request error: {str(e)}"
+        }), 500
